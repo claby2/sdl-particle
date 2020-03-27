@@ -4,13 +4,13 @@
 #include <time.h>
 #include <stdio.h>
 #include <string>
+#include <math.h>
 
 #include <iostream>
 
-const int PARTICLE_AMOUNT = 100;
+const int PARTICLE_AMOUNT = 5;
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
-
 
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
@@ -82,6 +82,7 @@ class Particle {
         static const int PARTICLE_WIDTH = 20;
         static const int PARTICLE_HEIGHT = 20;
         static const int PARTICLE_VEL = 3;
+        float mPosX, mPosY;
 
         Particle() {
             mPosX = rand() % SCREEN_WIDTH;
@@ -91,6 +92,31 @@ class Particle {
             mVelY = rand() % 2 == 0 ? - (rand() % PARTICLE_VEL + 1) : rand() % PARTICLE_VEL + 1;
         }
 
+        void intersect(Particle* b){
+            float x1 = mPosX + PARTICLE_WIDTH/2;
+            float y1 = mPosY + PARTICLE_HEIGHT/2;
+            int r1 = PARTICLE_WIDTH/2;
+
+            float x2 = b->mPosX + b->PARTICLE_WIDTH/2;
+            float y2 = b->mPosY + b->PARTICLE_HEIGHT/2;
+            int r2 = b->PARTICLE_WIDTH/2;
+        
+
+            if((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) <= (r1+r2)*(r1+r2)){
+                float angle = atan2(y2 - y1, x2 - x1);
+
+                b->mPosX += cos(angle)*(sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
+                b->mPosY += cos(angle)*(sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
+                mPosX += cos(angle)*(sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
+                mPosY += cos(angle)*(sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
+            }
+
+            // if(!(mPosY + PARTICLE_HEIGHT <= b->mPosY || mPosY >= b->mPosY + b->PARTICLE_WIDTH || mPosX + PARTICLE_WIDTH <= b->mPosX || mPosX >= b->mPosX + b->PARTICLE_WIDTH)){
+            //     mVelX = -mVelX;
+            //     mVelY = -mVelY;
+            // }
+        }
+
         void move() {
             mPosX += mVelX;
             if((mPosX < 0) || (mPosX + PARTICLE_WIDTH > SCREEN_WIDTH)){
@@ -98,7 +124,6 @@ class Particle {
             }
 
             mPosY += mVelY;
-
             if((mPosY < 0) || (mPosY + PARTICLE_HEIGHT > SCREEN_HEIGHT)){
                 mVelY = -mVelY;
             }
@@ -111,7 +136,7 @@ class Particle {
         }
 
         private:
-            int mPosX, mPosY, mVelX, mVelY;
+            int mVelX, mVelY;
 };
 
 void close() {
@@ -135,7 +160,7 @@ bool init() {
 		if(!SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
 			printf( "Warning: Linear texture filtering not enabled!" );
 		}
-		gWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+		gWindow = SDL_CreateWindow( "Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
 		if(gWindow == NULL) {
 			printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
 			success = false;
@@ -160,7 +185,6 @@ bool init() {
 
 	return success;
 }
-
 
 int main(int argc, char* args[]){
     srand((unsigned)time(NULL));
@@ -190,8 +214,10 @@ int main(int argc, char* args[]){
             for(int i = 0; i < PARTICLE_AMOUNT; i++){
                 particles[i]->move();
                 particles[i]->render();
+                for(int j = 0; j < PARTICLE_AMOUNT; j++){
+                    particles[i]->intersect(particles[j]);
+                }
             }
-
             SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
             SDL_RenderPresent(gRenderer);
