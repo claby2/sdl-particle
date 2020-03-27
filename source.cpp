@@ -110,11 +110,6 @@ class Particle {
                 mPosX += cos(angle)*(sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
                 mPosY += cos(angle)*(sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)));
             }
-
-            // if(!(mPosY + PARTICLE_HEIGHT <= b->mPosY || mPosY >= b->mPosY + b->PARTICLE_WIDTH || mPosX + PARTICLE_WIDTH <= b->mPosX || mPosX >= b->mPosX + b->PARTICLE_WIDTH)){
-            //     mVelX = -mVelX;
-            //     mVelY = -mVelY;
-            // }
         }
 
         void move() {
